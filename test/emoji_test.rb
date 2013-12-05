@@ -95,6 +95,10 @@ describe Emoji do
     it 'should return original string without emoji' do
       assert_equal "foo", Emoji.replace_textual_moji_with_images('foo')
     end
+    
+    it 'should return the emoji name without colons if the emoji is missing' do
+      assert_equal "foo", Emoji.replace_textual_moji_with_images(':foo:')
+    end
   
     it 'should escape html in non html_safe aware strings' do
       replaced_string = Emoji.replace_textual_moji_with_images(':heart:<script>')
