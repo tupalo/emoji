@@ -33,7 +33,15 @@ Install emoji image library assets:
     - Creating /Users/user/src/rails-app/app/assets/images/emoji...
     - Installing assets...
 
+If you are still using Rails 2.3 add the following to your Rakefile:
+
+``` ruby
+# Rakefile
+load 'emoji/tasks/install.rake'
+```
+
 ## Usage
+
 
 You can use this gem to replace unicode emoji characters with img tags linking to the appropriate emoji image.
 

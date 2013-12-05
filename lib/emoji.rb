@@ -10,8 +10,6 @@ end
 
 require 'emoji/index'
 
-require "emoji/railtie" if defined?(Rails)
-
 module Emoji
   @asset_host = nil
   @asset_path = nil
@@ -67,5 +65,14 @@ module Emoji
 
   def self.index
     @index ||= Index.new
+  end
+end
+
+if defined?(Rails)
+  if Rails::VERSION::MAJOR >= 3
+    require "emoji/railtie"
+  else
+    Emoji.asset_host = ActionController::Base.asset_host
+    Emoji.asset_path = '/images/emoji'
   end
 end

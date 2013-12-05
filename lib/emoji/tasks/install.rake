@@ -1,7 +1,11 @@
 namespace :emoji do
   desc "Install Emoji Image Assets"
   task :install_assets do
-    target_dir = ENV['TARGET'] ||= File.join(Rails.root, 'app/assets/images/emoji')
+    target_dir = ENV['TARGET'] ||= if Rails::VERSION::MAJOR >= 3
+      File.join(Rails.root, 'app/assets/images/emoji')
+    else
+      File.join(Rails.root, 'public/images/emoji')
+    end
     source_dir = File.absolute_path(File.dirname(__FILE__) + '/../../../assets/images')
     
     puts "===================================================================="
