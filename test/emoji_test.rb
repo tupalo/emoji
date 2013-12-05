@@ -90,6 +90,58 @@ describe Emoji do
       end
     end
   end
+  
+  describe "replace_textual_moji_with_images" do
+    it 'should return original string without emoji' do
+      assert_equal "foo", Emoji.replace_textual_moji_with_images('foo')
+    end
+  
+    it 'should escape html in non html_safe aware strings' do
+      replaced_string = Emoji.replace_textual_moji_with_images(':heart:<script>')
+      assert_equal "<img class=\"emoji\" src=\"http://localhost:3000/heart.png\">&lt;script&gt;", replaced_string
+    end
+  
+    it 'should replace unicode moji with img tag' do
+      base_string = "I :heart: Emoji"
+      replaced_string = Emoji.replace_textual_moji_with_images(base_string)
+      assert_equal "I <img class=\"emoji\" src=\"http://localhost:3000/heart.png\"> Emoji", replaced_string
+    end
+  
+    it 'should handle nil string' do
+      assert_equal nil, Emoji.replace_textual_moji_with_images(nil)
+    end
+  
+    describe 'with html_safe buffer' do
+      it 'should escape non html_safe? strings' do
+        string = HtmlSafeString.new(':heart:<script>')
+  
+        replaced_string = string.stub(:html_safe?, false) do
+          Emoji.replace_textual_moji_with_images(string)
+        end
+  
+        assert_equal "<img class=\"emoji\" src=\"http://localhost:3000/heart.png\">&lt;script&gt;", replaced_string
+      end
+  
+      it 'should not escape html_safe strings' do
+        string = HtmlSafeString.new(':heart:<a href="harmless">')
+  
+        replaced_string = string.stub(:html_safe?, true) do
+          Emoji.replace_textual_moji_with_images(string)
+        end
+        
+        assert_equal "<img class=\"emoji\" src=\"http://localhost:3000/heart.png\"><a href=\"harmless\">", replaced_string
+      end
+  
+      it 'should always return an html_safe string' do
+        string = HtmlSafeString.new(':heart:')
+        replaced_string = string.stub(:html_safe, 'safe_buffer') do
+           Emoji.replace_textual_moji_with_images(string)
+        end
+  
+        assert_equal "safe_buffer", replaced_string
+      end
+    end
+  end
 
   class HtmlSafeString < String
     def initialize(*); super; end

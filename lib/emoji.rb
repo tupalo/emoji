@@ -44,19 +44,28 @@ module Emoji
     unless string && string.match(index.unicode_moji_regex)
       return string
     end
-
-    if string.respond_to?(:html_safe?) && string.html_safe?
-      safe_string = string
-    else
-      safe_string = escape_html(string)
+    
+    replace_with_images(string) { |safe_string|
+      safe_string.gsub!(index.unicode_moji_regex) do |moji|
+        %Q{<img class="emoji" src="#{ image_url_for_unicode_moji(moji) }">}
+      end
+    }
+  end
+  
+  def self.replace_textual_moji_with_images(string)
+    unless string && string.match(/:([a-z0-9\+\-_]+):/)
+      return string
     end
-
-    safe_string.gsub!(index.unicode_moji_regex) do |moji|
-      %Q{<img class="emoji" src="#{ image_url_for_unicode_moji(moji) }">}
-    end
-    safe_string = safe_string.html_safe if safe_string.respond_to?(:html_safe)
-
-    safe_string
+    
+    replace_with_images(string) { |safe_string|      
+      safe_string.gsub!(/:([a-z0-9\+\-_]+):/) do |moji|
+        if index.find_by_name($1)
+          %Q{<img class="emoji" src="#{ image_url_for_name($1) }">} 
+        else
+          $1
+        end
+      end
+    }
   end
 
   def self.escape_html(string)
@@ -65,6 +74,20 @@ module Emoji
 
   def self.index
     @index ||= Index.new
+  end
+  
+  def self.replace_with_images(string)
+    if string.respond_to?(:html_safe?) && string.html_safe?
+      safe_string = string
+    else
+      safe_string = escape_html(string)
+    end
+
+    yield safe_string
+
+    safe_string = safe_string.html_safe if safe_string.respond_to?(:html_safe)
+
+    safe_string
   end
 end
 
